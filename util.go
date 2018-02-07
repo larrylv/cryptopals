@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 )
 
 // HexToBase64 converts a hex string to base64 encoded string
@@ -30,4 +32,34 @@ func Xor(a, b []byte) ([]byte, error) {
 	}
 
 	return dst, nil
+}
+
+// SingleByteXor takes a key, a string and returns the result of
+// the string being XOR'd by the key
+func SingleByteXor(key byte, a []byte) ([]byte, error) {
+	b := bytes.Repeat([]byte{key}, len(a))
+
+	return Xor(a, b)
+}
+
+// FindSingleKeyForXorCipher finds the single key which is used to XOR
+// the original message
+func FindSingleKeyForXorCipher(cipher []byte) ([]byte, error) {
+	maxScore := 0.0
+	var resKey []byte
+
+	for key := 0; key <= 255; key++ {
+		s, err := SingleByteXor(byte(key), cipher)
+		if err != nil {
+			return nil, fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
+		}
+
+		tmpScore := ScoringEnglish(s)
+		if tmpScore > maxScore {
+			maxScore = tmpScore
+			resKey = []byte{byte(key)}
+		}
+	}
+
+	return resKey, nil
 }

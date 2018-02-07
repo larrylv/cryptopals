@@ -30,6 +30,19 @@ func TestXor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Xor: got an error %v\n", err)
 	} else if bytes.Compare(s, decodedExpected) != 0 {
-		t.Fatalf("Xor: expected %v, got %v\n", expected, s)
+		t.Fatalf("Xor: expected %s, got %s\n", expected, s)
+	}
+}
+
+func TestFindSingleKeyForXorCipher(t *testing.T) {
+	a := `1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736`
+	decodedA, _ := hex.DecodeString(a)
+	expectedKey := "X"
+
+	s, err := FindSingleKeyForXorCipher(decodedA)
+	if err != nil {
+		t.Errorf("FindSingleKeyForXorCipher: got an error %v\n", err)
+	} else if string(s) != expectedKey {
+		t.Errorf("FindSingleKeyForXorCipher: expected key %s, got %s\n", expectedKey, s)
 	}
 }
