@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math"
+	"os"
 )
 
 // HexToBase64 converts a hex string to base64 encoded string
@@ -45,7 +48,7 @@ func SingleByteXor(key byte, a []byte) ([]byte, error) {
 // FindSingleKeyForXorCipher finds the single key which is used to XOR
 // the original message
 func FindSingleKeyForXorCipher(cipher []byte) ([]byte, error) {
-	maxScore := 0.0
+	maxScore := math.Inf(-1)
 	var resKey []byte
 
 	for key := 0; key <= 255; key++ {
@@ -62,4 +65,49 @@ func FindSingleKeyForXorCipher(cipher []byte) ([]byte, error) {
 	}
 
 	return resKey, nil
+}
+
+// DetectStringBeingXoredWithSingleKey detects one line in a file
+// being XOR'ed by a single key
+func DetectStringBeingXoredWithSingleKey(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: got an error %v", err)
+	}
+	defer file.Close()
+
+	maxScore := 0.0
+	var result []byte
+
+	reader := bufio.NewReader(file)
+	for {
+		curLine, _, err := reader.ReadLine()
+		if err != nil {
+			break
+		}
+
+		curDecoded, err := hex.DecodeString(string(curLine))
+		if err != nil {
+			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
+		}
+
+		curKey, err := FindSingleKeyForXorCipher(curDecoded)
+		if err != nil {
+			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
+		}
+
+		curDecrypted, err := SingleByteXor(curKey[0], curDecoded)
+		if err != nil {
+			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
+		}
+
+		curScore := ScoringEnglish(curDecrypted)
+		if curScore > maxScore {
+			maxScore = curScore
+			result = make([]byte, len(curDecrypted))
+			copy(result, curDecrypted)
+		}
+	}
+
+	return result, nil
 }

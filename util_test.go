@@ -46,3 +46,13 @@ func TestFindSingleKeyForXorCipher(t *testing.T) {
 		t.Errorf("FindSingleKeyForXorCipher: expected key %s, got %s\n", expectedKey, s)
 	}
 }
+
+func TestDetectStringBeingXoredWithSingleKey(t *testing.T) {
+	decryptedLine, err := DetectStringBeingXoredWithSingleKey("./data/set_1_challege_4.txt")
+	expectedLine := "Now that the party is jumping\n"
+	if err != nil {
+		t.Errorf("DetectStringBeingXoredWithSingleKey: got an error %v\n", err)
+	} else if expectedLine != string(decryptedLine) {
+		t.Errorf("DetectStringBeingXoredWithSingleKey: expected %v, got %v\n", expectedLine, decryptedLine)
+	}
+}
