@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/bits"
 	"os"
 )
 
@@ -126,4 +127,24 @@ func DetectStringBeingXoredWithSingleKey(filename string) ([]byte, error) {
 	}
 
 	return result, nil
+}
+
+// HammingDistance returns Hamming distance of two strings, which is the number of differing bits
+func HammingDistance(a, b []byte) int {
+	var dis int
+	var minLen int
+
+	if len(a) > len(b) {
+		minLen = len(b)
+		dis = len(a) - len(b)
+	} else {
+		minLen = len(a)
+		dis = len(b) - len(a)
+	}
+
+	for i := 0; i < minLen; i++ {
+		dis += bits.OnesCount(uint(a[i] ^ b[i]))
+	}
+
+	return dis
 }

@@ -69,3 +69,13 @@ func TestDetectStringBeingXoredWithSingleKey(t *testing.T) {
 		t.Errorf("DetectStringBeingXoredWithSingleKey: expected %v, got %v\n", expectedLine, decryptedLine)
 	}
 }
+
+func TestHammingDistance(t *testing.T) {
+	a := "this is a test"
+	b := "wokka wokka!!!"
+
+	res := HammingDistance([]byte(a), []byte(b))
+	if res != 37 {
+		t.Errorf("HammingDistance: expected %d, got %d\n", 37, res)
+	}
+}
