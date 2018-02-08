@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"io/ioutil"
 	"testing"
 )
@@ -14,8 +14,16 @@ func TestDecryptCipherXoredByRepeatKey(t *testing.T) {
 		return
 	}
 
-	decrypted := DecryptCipherXoredByRepeatKey(cipher)
-	fmt.Printf("%s\n", decrypted)
+	decrypted, err := DecryptCipherXoredByRepeatKey(cipher)
+	if err != nil {
+		t.Errorf("TestDecryptCipherXoredByRepeatKey: got an error %v", err)
+		return
+	}
+	// fmt.Printf("%s\n", decrypted)
+
+	if !bytes.Contains(decrypted, []byte("Play that funky music")) {
+		t.Errorf("TestDecryptCipherXoredByRepeatKey: expected it contains %s", "Play that funky music")
+	}
 }
 
 func TestFindRepeatKeySize(t *testing.T) {
