@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
@@ -147,4 +148,20 @@ func HammingDistance(a, b []byte) int {
 	}
 
 	return dis
+}
+
+// DetectAesInEcbMode returns if the cipher is encrypted with AES in ECB mode
+func DetectAesInEcbMode(cipher []byte) bool {
+	m := make(map[string]bool)
+	blockSize := aes.BlockSize
+
+	for i := 0; i+1 <= len(cipher)/blockSize; i++ {
+		block := cipher[i*blockSize : (i+1)*blockSize]
+		if m[string(block)] {
+			return true
+		}
+		m[string(block)] = true
+	}
+
+	return false
 }
