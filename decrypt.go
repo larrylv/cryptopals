@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -42,6 +43,27 @@ func DecryptCipherXoredByRepeatKey(cipher []byte) ([]byte, error) {
 	}
 
 	return decoded, nil
+}
+
+// DecryptAesEcbCipher decrypts the AES (EBC mode) encrypted cipher with the given key
+func DecryptAesEcbCipher(key, cipher []byte) ([]byte, error) {
+	decodedCipher, err := base64.StdEncoding.DecodeString(string(cipher))
+	if err != nil {
+		return nil, fmt.Errorf("DecryptAesEcbCipher: %v", err)
+	}
+
+	cipherBlock, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, fmt.Errorf("DecryptAesEcbCipher: %v", err)
+	}
+
+	size := aes.BlockSize
+	decrypted := make([]byte, len(decodedCipher))
+	for bs, be := 0, size; bs < len(decodedCipher); bs, be = bs+size, be+size {
+		cipherBlock.Decrypt(decrypted[bs:be], decodedCipher[bs:be])
+	}
+
+	return decrypted, nil
 }
 
 // FindRepeatKeySize returns the most possible repeat-key size for the cipher
