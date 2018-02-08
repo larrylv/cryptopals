@@ -8,12 +8,12 @@ import (
 	"math"
 )
 
-// DecryptCipherXoredByRepeatKey decrypts the cipher which the original
+// DecryptRepeatKeyXorCipher decrypts the cipher which the original
 // string is xor'ed by repeat-key
-func DecryptCipherXoredByRepeatKey(cipher []byte) ([]byte, error) {
+func DecryptRepeatKeyXorCipher(cipher []byte) ([]byte, error) {
 	decodedCipher, err := base64.StdEncoding.DecodeString(string(cipher))
 	if err != nil {
-		return nil, fmt.Errorf("DecryptCipherXoredByRepeatKey: %v", err)
+		return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
 	}
 
 	keySize := FindRepeatKeySize(decodedCipher)
@@ -27,19 +27,19 @@ func DecryptCipherXoredByRepeatKey(cipher []byte) ([]byte, error) {
 
 		singleKey, err := FindSingleKeyForXorCipher(curBlock)
 		if err != nil {
-			return nil, fmt.Errorf("DecryptCipherXoredByRepeatKey: %v", err)
+			return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
 		}
 		key = append(key, singleKey)
 	}
 
 	decrypted, err := RepeatKeyXor(key, decodedCipher)
 	if err != nil {
-		return nil, fmt.Errorf("DecryptCipherXoredByRepeatKey: %v", err)
+		return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
 	}
 
 	decoded, err := hex.DecodeString(string(decrypted))
 	if err != nil {
-		return nil, fmt.Errorf("DecryptCipherXoredByRepeatKey: %v", err)
+		return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
 	}
 
 	return decoded, nil
