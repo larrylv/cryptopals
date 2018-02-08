@@ -64,20 +64,20 @@ func RepeatKeyXor(key []byte, str []byte) ([]byte, error) {
 
 // FindSingleKeyForXorCipher finds the single key which is used to XOR
 // the original message
-func FindSingleKeyForXorCipher(cipher []byte) ([]byte, error) {
+func FindSingleKeyForXorCipher(cipher []byte) (byte, error) {
 	maxScore := math.Inf(-1)
-	var resKey []byte
+	var resKey byte
 
 	for key := 0; key <= 255; key++ {
 		s, err := SingleByteXor(byte(key), cipher)
 		if err != nil {
-			return nil, fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
+			return byte(0), fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
 		}
 
 		tmpScore := ScoringEnglish(s)
 		if tmpScore > maxScore {
 			maxScore = tmpScore
-			resKey = []byte{byte(key)}
+			resKey = byte(key)
 		}
 	}
 
@@ -113,7 +113,7 @@ func DetectStringBeingXoredWithSingleKey(filename string) ([]byte, error) {
 			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
 		}
 
-		curDecrypted, err := SingleByteXor(curKey[0], curDecoded)
+		curDecrypted, err := SingleByteXor(curKey, curDecoded)
 		if err != nil {
 			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
 		}
