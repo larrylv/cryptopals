@@ -17,7 +17,13 @@ func TestDecryptAesEcbCipher(t *testing.T) {
 		return
 	}
 
-	decrypted, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE")).Decrypt(ciphertext)
+	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
+	if err != nil {
+		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
+		return
+	}
+
+	decrypted, err := cipher.Decrypt(ciphertext)
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
 		return

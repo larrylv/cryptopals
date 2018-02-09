@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"encoding/base64"
 	"fmt"
+	"strconv"
 )
 
 // type aesCipher interface {
@@ -16,12 +17,23 @@ type AesEcbCipher struct {
 	key []byte
 }
 
+// KeySizeError is used when the key size is not supported
+type KeySizeError int
+
+func (k KeySizeError) Error() string {
+	return "aes: invalid key size " + strconv.Itoa(int(k))
+}
+
 // BlockSize is the AES block size in bytes.
 const BlockSize = 16
 
 // NewAesEcbCipher returns an AES-128 ECB mode cipher
-func NewAesEcbCipher(key []byte) *AesEcbCipher {
-	return &AesEcbCipher{key: key}
+func NewAesEcbCipher(key []byte) (*AesEcbCipher, error) {
+	if len(key) == 16 {
+		return &AesEcbCipher{key: key}, nil
+	}
+
+	return nil, KeySizeError(len(key))
 }
 
 // Decrypt of AesEcbCipher implements Decrypt function of aesCipher interface
