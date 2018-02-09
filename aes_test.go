@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/hex"
 	"io/ioutil"
 	"os"
@@ -17,13 +18,19 @@ func TestDecryptAesEcbCipher(t *testing.T) {
 		return
 	}
 
+	decodedCiphertext, err := base64.StdEncoding.DecodeString(string(ciphertext))
+	if err != nil {
+		t.Errorf("TestAesEcbCipher.Decrypt: %v", err)
+		return
+	}
+
 	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
 		return
 	}
 
-	decrypted, err := cipher.Decrypt(ciphertext)
+	decrypted, err := cipher.Decrypt(decodedCiphertext)
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
 		return

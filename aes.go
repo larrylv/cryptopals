@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/aes"
-	"encoding/base64"
 	"fmt"
 	"strconv"
 )
@@ -38,19 +37,14 @@ func NewAesEcbCipher(key []byte) (*AesEcbCipher, error) {
 
 // Decrypt of AesEcbCipher implements Decrypt function of aesCipher interface
 func (cipher *AesEcbCipher) Decrypt(ciphertext []byte) ([]byte, error) {
-	decodedCipher, err := base64.StdEncoding.DecodeString(string(ciphertext))
-	if err != nil {
-		return nil, fmt.Errorf("AesEcbCipher.Decrypt: %v", err)
-	}
-
 	cipherBlock, err := aes.NewCipher(cipher.key)
 	if err != nil {
 		return nil, fmt.Errorf("AesEcbCipher.Decrypt: %v", err)
 	}
 
-	decrypted := make([]byte, len(decodedCipher))
-	for bs, be := 0, BlockSize; bs < len(decodedCipher); bs, be = bs+BlockSize, be+BlockSize {
-		cipherBlock.Decrypt(decrypted[bs:be], decodedCipher[bs:be])
+	decrypted := make([]byte, len(ciphertext))
+	for bs, be := 0, BlockSize; bs < len(ciphertext); bs, be = bs+BlockSize, be+BlockSize {
+		cipherBlock.Decrypt(decrypted[bs:be], ciphertext[bs:be])
 	}
 
 	return decrypted, nil
