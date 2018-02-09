@@ -2,18 +2,18 @@ package main
 
 import (
 	"crypto/aes"
-	"fmt"
+	"crypto/cipher"
 	"strconv"
 )
 
 // type aesCipher interface {
-// 	Encrypt(plaintext []byte) ([]byte, error)
-// 	Decrypt(ciphertext []byte) ([]byte, error)
+// 	Encrypt(plaintext []byte) []byte
+// 	Decrypt(ciphertext []byte) []byte
 // }
 
 // AesEcbCipher is just an AES ECB mode cipher...
 type AesEcbCipher struct {
-	key []byte
+	cipherBlock cipher.Block
 }
 
 // KeySizeError is used when the key size is not supported
@@ -28,26 +28,38 @@ const BlockSize = 16
 
 // NewAesEcbCipher returns an AES-128 ECB mode cipher
 func NewAesEcbCipher(key []byte) (*AesEcbCipher, error) {
-	if len(key) == 16 {
-		return &AesEcbCipher{key: key}, nil
+	switch len(key) {
+	case 16, 24, 32:
+		cipherBlock, err := aes.NewCipher(key)
+		if err != nil {
+			return nil, err
+		}
+		return &AesEcbCipher{cipherBlock}, nil
+	default:
+		break
 	}
 
 	return nil, KeySizeError(len(key))
 }
 
+// Encrypt of AesEcbCipher implements Encrypt function of aesCipher interface
+func (cipher *AesEcbCipher) Encrypt(plaintext []byte) []byte {
+	encrypted := make([]byte, len(plaintext))
+	for bs, be := 0, BlockSize; be <= len(plaintext); bs, be = bs+BlockSize, be+BlockSize {
+		cipher.cipherBlock.Encrypt(encrypted[bs:be], plaintext[bs:be])
+	}
+
+	return encrypted
+}
+
 // Decrypt of AesEcbCipher implements Decrypt function of aesCipher interface
-func (cipher *AesEcbCipher) Decrypt(ciphertext []byte) ([]byte, error) {
-	cipherBlock, err := aes.NewCipher(cipher.key)
-	if err != nil {
-		return nil, fmt.Errorf("AesEcbCipher.Decrypt: %v", err)
-	}
-
+func (cipher *AesEcbCipher) Decrypt(ciphertext []byte) []byte {
 	decrypted := make([]byte, len(ciphertext))
-	for bs, be := 0, BlockSize; bs < len(ciphertext); bs, be = bs+BlockSize, be+BlockSize {
-		cipherBlock.Decrypt(decrypted[bs:be], ciphertext[bs:be])
+	for bs, be := 0, BlockSize; be <= len(ciphertext); bs, be = bs+BlockSize, be+BlockSize {
+		cipher.cipherBlock.Decrypt(decrypted[bs:be], ciphertext[bs:be])
 	}
 
-	return decrypted, nil
+	return decrypted
 }
 
 // IsEncryptedWithAesEcbMode returns if the ciphertext is encrypted with AES in ECB mode

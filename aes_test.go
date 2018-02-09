@@ -10,35 +10,48 @@ import (
 	"testing"
 )
 
-func TestDecryptAesEcbCipher(t *testing.T) {
-	filename := "./data/set_1_challege_7.txt"
-	ciphertext, err := ioutil.ReadFile(filename)
-	if err != nil {
-		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
-		return
-	}
-
-	decodedCiphertext, err := base64.StdEncoding.DecodeString(string(ciphertext))
-	if err != nil {
-		t.Errorf("TestAesEcbCipher.Decrypt: %v", err)
-		return
-	}
-
+func TestAesEcbCipherEncrypt(t *testing.T) {
+	plaintext := "Play that funky "
 	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
 		return
 	}
 
-	decrypted, err := cipher.Decrypt(decodedCiphertext)
+	encrypted := cipher.Encrypt([]byte(plaintext))
+	// fmt.Printf("%s\n", base64.StdEncoding.EncodeToString(encrypted))
+
+	decrypted := cipher.Decrypt(encrypted)
+	if bytes.Compare([]byte(plaintext), decrypted) != 0 {
+		t.Errorf("TestAesEcbCipherEncrypt: sth wrong with the encryption or decryption, got %s after decryption", decrypted)
+	}
+}
+
+func TestAesEcbCipherDecrypt(t *testing.T) {
+	filename := "./data/set_1_challege_7.txt"
+	ciphertext, err := ioutil.ReadFile(filename)
 	if err != nil {
-		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
+		t.Errorf("TestAesEcbCipherDecrypt: got an error %v", err)
 		return
 	}
+
+	decodedCiphertext, err := base64.StdEncoding.DecodeString(string(ciphertext))
+	if err != nil {
+		t.Errorf("TestAesEcbCipherDecrypt: %v", err)
+		return
+	}
+
+	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
+	if err != nil {
+		t.Errorf("TestAesEcbCipherDecrypt: got an error %v", err)
+		return
+	}
+
+	decrypted := cipher.Decrypt(decodedCiphertext)
 	// fmt.Printf("%s\n", decrypted)
 
 	if !bytes.Contains(decrypted, []byte("Play that funky music")) {
-		t.Errorf("TestDecryptAesEcbCipher: expected it contains %s", "Play that funky music")
+		t.Errorf("TestAesEcbCipherDecrypt: expected it contains %s", "Play that funky music")
 	}
 }
 
