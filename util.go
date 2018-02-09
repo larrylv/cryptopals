@@ -35,14 +35,6 @@ func Xor(a, b []byte) ([]byte, error) {
 	return dst, nil
 }
 
-// SingleByteXor takes a key, a string and returns the result of
-// the string being XOR'd by the key
-func SingleByteXor(key byte, a []byte) ([]byte, error) {
-	b := bytes.Repeat([]byte{key}, len(a))
-
-	return Xor(a, b)
-}
-
 // HammingDistance returns Hamming distance of two strings, which is the number of differing bits
 func HammingDistance(a, b []byte) int {
 	var dis int
@@ -63,10 +55,10 @@ func HammingDistance(a, b []byte) int {
 	return dis
 }
 
-// Pkcs7Padding implements PCKS#7 padding
-func Pkcs7Padding(plaintext []byte, blockSize int) ([]byte, error) {
+// PKCS7Padding implements PCKS#7 padding
+func PKCS7Padding(plaintext []byte, blockSize int) ([]byte, error) {
 	if blockSize > 255 || blockSize <= 0 {
-		return nil, fmt.Errorf("Pkcs7Padding: invalid blockSize %d", blockSize)
+		return nil, fmt.Errorf("PKCS7Padding: invalid blockSize %d", blockSize)
 	}
 
 	paddedCnt := blockSize - (len(plaintext) % blockSize)

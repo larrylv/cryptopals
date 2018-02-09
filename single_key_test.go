@@ -18,12 +18,12 @@ func TestFindSingleXorByte(t *testing.T) {
 	}
 }
 
-func TestDetectStringEncryptedWithSingleXorKey(t *testing.T) {
-	decryptedLine, err := DetectStringEncryptedWithSingleXorKey("./data/set_1_challege_4.txt")
+func TestDetectStringXoredWithSingleKey(t *testing.T) {
+	decryptedLine, err := DetectStringXoredWithSingleKey("./data/set_1_challege_4.txt")
 	expectedLine := "Now that the party is jumping\n"
 	if err != nil {
-		t.Errorf("DetectStringEncryptedWithSingleXorKey: got an error %v\n", err)
+		t.Errorf("DetectStringXoredWithSingleKey: got an error %v\n", err)
 	} else if expectedLine != string(decryptedLine) {
-		t.Errorf("DetectStringEncryptedWithSingleXorKey: expected %v, got %v\n", expectedLine, decryptedLine)
+		t.Errorf("DetectStringXoredWithSingleKey: expected %v, got %v\n", expectedLine, decryptedLine)
 	}
 }

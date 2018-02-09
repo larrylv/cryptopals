@@ -44,17 +44,17 @@ func TestHammingDistance(t *testing.T) {
 	}
 }
 
-func TestPkcs7Padding(t *testing.T) {
+func TestPKCS7Padding(t *testing.T) {
 	plaintext := []byte("YELLOW SUBMARINE")
 	expectedCipher := []byte("YELLOW SUBMARINE\x04\x04\x04\x04")
 
-	cipher, err := Pkcs7Padding([]byte(plaintext), 20)
+	cipher, err := PKCS7Padding([]byte(plaintext), 20)
 	if err != nil {
-		t.Errorf("TestPkcs7Padding: got an error %v", err)
+		t.Errorf("TestPKCS7Padding: got an error %v", err)
 		return
 	}
 
 	if bytes.Compare([]byte(expectedCipher), cipher) != 0 {
-		t.Errorf("TestPkcs7Padding: expected %v, got %v", expectedCipher, cipher)
+		t.Errorf("TestPKCS7Padding: expected %v, got %v", expectedCipher, cipher)
 	}
 }

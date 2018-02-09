@@ -8,15 +8,15 @@ import (
 	"math"
 )
 
-// RepeatKeyXor encrypts the string using repeat-key XOR
-func RepeatKeyXor(key []byte, str []byte) ([]byte, error) {
+// XorWithRepeatKey encrypts the string using repeat-key XOR
+func XorWithRepeatKey(key []byte, str []byte) ([]byte, error) {
 	var xor []byte
 	keyLen := len(key)
 
 	for i, b := range str {
 		r, err := Xor([]byte{key[i%keyLen]}, []byte{byte(b)})
 		if err != nil {
-			return nil, errors.New("RepeatKeyXor errored")
+			return nil, errors.New("XorWithRepeatKey errored")
 		}
 		xor = append(xor, r...)
 	}
@@ -24,11 +24,11 @@ func RepeatKeyXor(key []byte, str []byte) ([]byte, error) {
 	return []byte(hex.EncodeToString(xor)), nil
 }
 
-// DecryptRepeatKeyXor decrypts the cipher that is xor encrypted with repeat-key
-func DecryptRepeatKeyXor(cipher []byte) ([]byte, error) {
+// DecryptStringXoredWithRepeatKey decrypts the cipher that is xor encrypted with repeat-key
+func DecryptStringXoredWithRepeatKey(cipher []byte) ([]byte, error) {
 	decodedCipher, err := base64.StdEncoding.DecodeString(string(cipher))
 	if err != nil {
-		return nil, fmt.Errorf("DecryptRepeatKeyXor: %v", err)
+		return nil, fmt.Errorf("DecryptStringXoredWithRepeatKey: %v", err)
 	}
 
 	keySize := findRepeatKeySize(decodedCipher)
@@ -42,19 +42,19 @@ func DecryptRepeatKeyXor(cipher []byte) ([]byte, error) {
 
 		singleByte, err := FindSingleXorByte(curBlock)
 		if err != nil {
-			return nil, fmt.Errorf("DecryptRepeatKeyXor: %v", err)
+			return nil, fmt.Errorf("DecryptStringXoredWithRepeatKey: %v", err)
 		}
 		key = append(key, singleByte)
 	}
 
-	decrypted, err := RepeatKeyXor(key, decodedCipher)
+	decrypted, err := XorWithRepeatKey(key, decodedCipher)
 	if err != nil {
-		return nil, fmt.Errorf("DecryptRepeatKeyXor: %v", err)
+		return nil, fmt.Errorf("DecryptStringXoredWithRepeatKey: %v", err)
 	}
 
 	decoded, err := hex.DecodeString(string(decrypted))
 	if err != nil {
-		return nil, fmt.Errorf("DecryptRepeatKeyXor: %v", err)
+		return nil, fmt.Errorf("DecryptStringXoredWithRepeatKey: %v", err)
 	}
 
 	return decoded, nil

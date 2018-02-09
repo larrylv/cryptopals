@@ -2,11 +2,20 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"math"
 	"os"
 )
+
+// XorWithSingleByte takes a key, a string and returns the result of
+// the string being XOR'd by the key
+func XorWithSingleByte(key byte, a []byte) ([]byte, error) {
+	b := bytes.Repeat([]byte{key}, len(a))
+
+	return Xor(a, b)
+}
 
 // FindSingleXorByte finds the single byte which is used to XOR
 // the original string
@@ -15,7 +24,7 @@ func FindSingleXorByte(cipher []byte) (byte, error) {
 	var resKey byte
 
 	for key := 0; key <= 255; key++ {
-		s, err := SingleByteXor(byte(key), cipher)
+		s, err := XorWithSingleByte(byte(key), cipher)
 		if err != nil {
 			return byte(0), fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
 		}
@@ -30,12 +39,12 @@ func FindSingleXorByte(cipher []byte) (byte, error) {
 	return resKey, nil
 }
 
-// DetectStringEncryptedWithSingleXorKey detects one line in a file
+// DetectStringXoredWithSingleKey detects one line in a file
 // being XOR'ed by a single key
-func DetectStringEncryptedWithSingleXorKey(filename string) ([]byte, error) {
+func DetectStringXoredWithSingleKey(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("DetectStringEncryptedWithSingleXorKey: got an error %v", err)
+		return nil, fmt.Errorf("DetectStringXoredWithSingleKey: got an error %v", err)
 	}
 	defer file.Close()
 
@@ -51,17 +60,17 @@ func DetectStringEncryptedWithSingleXorKey(filename string) ([]byte, error) {
 
 		curDecoded, err := hex.DecodeString(string(curLine))
 		if err != nil {
-			return nil, fmt.Errorf("DetectStringEncryptedWithSingleXorKey: %v", err)
+			return nil, fmt.Errorf("DetectStringXoredWithSingleKey: %v", err)
 		}
 
 		curKey, err := FindSingleXorByte(curDecoded)
 		if err != nil {
-			return nil, fmt.Errorf("DetectStringEncryptedWithSingleXorKey: %v", err)
+			return nil, fmt.Errorf("DetectStringXoredWithSingleKey: %v", err)
 		}
 
-		curDecrypted, err := SingleByteXor(curKey, curDecoded)
+		curDecrypted, err := XorWithSingleByte(curKey, curDecoded)
 		if err != nil {
-			return nil, fmt.Errorf("DetectStringEncryptedWithSingleXorKey: %v", err)
+			return nil, fmt.Errorf("DetectStringXoredWithSingleKey: %v", err)
 		}
 
 		curScore := ScoringEnglish(curDecrypted)
