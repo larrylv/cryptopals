@@ -24,9 +24,9 @@ func XorWithRepeatKey(key []byte, str []byte) ([]byte, error) {
 	return []byte(hex.EncodeToString(xor)), nil
 }
 
-// DecryptStringXoredWithRepeatKey decrypts the cipher that is xor encrypted with repeat-key
-func DecryptStringXoredWithRepeatKey(cipher []byte) ([]byte, error) {
-	decodedCipher, err := base64.StdEncoding.DecodeString(string(cipher))
+// DecryptStringXoredWithRepeatKey decrypts the ciphertext that is xor encrypted with repeat-key
+func DecryptStringXoredWithRepeatKey(ciphertext []byte) ([]byte, error) {
+	decodedCipher, err := base64.StdEncoding.DecodeString(string(ciphertext))
 	if err != nil {
 		return nil, fmt.Errorf("DecryptStringXoredWithRepeatKey: %v", err)
 	}
@@ -60,22 +60,22 @@ func DecryptStringXoredWithRepeatKey(cipher []byte) ([]byte, error) {
 	return decoded, nil
 }
 
-// findRepeatKeySize returns the most possible repeat-key size for the cipher
-func findRepeatKeySize(cipher []byte) int {
+// findRepeatKeySize returns the most possible repeat-key size for the ciphertext
+func findRepeatKeySize(ciphertext []byte) int {
 	keySize := 0
 	minDistance := math.Inf(1)
 
 	for i := 2; i <= 64; i++ {
-		// exceeds the cipher length
-		if 2*i > len(cipher) {
+		// exceeds the ciphertext length
+		if 2*i > len(ciphertext) {
 			break
 		}
 
 		distance := 0.0
 		cnt := 0
 
-		for j := 0; j < 10 && (j+2)*i <= len(cipher); j++ {
-			distance += float64(HammingDistance(cipher[j*i:(j+1)*i], cipher[(j+1)*i:(j+2)*i]))
+		for j := 0; j < 10 && (j+2)*i <= len(ciphertext); j++ {
+			distance += float64(HammingDistance(ciphertext[j*i:(j+1)*i], ciphertext[(j+1)*i:(j+2)*i]))
 			cnt++
 		}
 

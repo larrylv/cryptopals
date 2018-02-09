@@ -19,12 +19,12 @@ func XorWithSingleByte(key byte, a []byte) ([]byte, error) {
 
 // FindSingleXorByte finds the single byte which is used to XOR
 // the original string
-func FindSingleXorByte(cipher []byte) (byte, error) {
+func FindSingleXorByte(ciphertext []byte) (byte, error) {
 	maxScore := math.Inf(-1)
 	var resKey byte
 
 	for key := 0; key <= 255; key++ {
-		s, err := XorWithSingleByte(byte(key), cipher)
+		s, err := XorWithSingleByte(byte(key), ciphertext)
 		if err != nil {
 			return byte(0), fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
 		}
