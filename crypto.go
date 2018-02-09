@@ -4,47 +4,9 @@ import (
 	"bytes"
 	"crypto/aes"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"math"
 )
-
-// DecryptRepeatKeyXorCipher decrypts the cipher which the original
-// string is xor'ed by repeat-key
-func DecryptRepeatKeyXorCipher(cipher []byte) ([]byte, error) {
-	decodedCipher, err := base64.StdEncoding.DecodeString(string(cipher))
-	if err != nil {
-		return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
-	}
-
-	keySize := FindRepeatKeySize(decodedCipher)
-	var key []byte
-
-	for i := 0; i < keySize; i++ {
-		var curBlock []byte
-		for j := i; j < len(decodedCipher); j += keySize {
-			curBlock = append(curBlock, decodedCipher[j])
-		}
-
-		singleKey, err := FindSingleKeyForXorCipher(curBlock)
-		if err != nil {
-			return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
-		}
-		key = append(key, singleKey)
-	}
-
-	decrypted, err := RepeatKeyXor(key, decodedCipher)
-	if err != nil {
-		return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
-	}
-
-	decoded, err := hex.DecodeString(string(decrypted))
-	if err != nil {
-		return nil, fmt.Errorf("DecryptRepeatKeyXorCipher: %v", err)
-	}
-
-	return decoded, nil
-}
 
 // DecryptAesEcbCipher decrypts the AES (EBC mode) encrypted cipher with the given key
 func DecryptAesEcbCipher(key, cipher []byte) ([]byte, error) {

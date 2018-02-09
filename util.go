@@ -47,22 +47,6 @@ func SingleByteXor(key byte, a []byte) ([]byte, error) {
 	return Xor(a, b)
 }
 
-// RepeatKeyXor encrypts the string using repeat-key XOR
-func RepeatKeyXor(key []byte, str []byte) ([]byte, error) {
-	var xor []byte
-	keyLen := len(key)
-
-	for i, b := range str {
-		r, err := Xor([]byte{key[i%keyLen]}, []byte{byte(b)})
-		if err != nil {
-			return nil, errors.New("RepeatKeyXor errored")
-		}
-		xor = append(xor, r...)
-	}
-
-	return []byte(hex.EncodeToString(xor)), nil
-}
-
 // FindSingleKeyForXorCipher finds the single key which is used to XOR
 // the original message
 func FindSingleKeyForXorCipher(cipher []byte) (byte, error) {
