@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
@@ -64,6 +65,20 @@ func DecryptAesEcbCipher(key, cipher []byte) ([]byte, error) {
 	}
 
 	return decrypted, nil
+}
+
+// Pkcs7Padding implements PCKS#7 padding
+func Pkcs7Padding(plaintext []byte, blockSize int) ([]byte, error) {
+	if blockSize > 255 || blockSize <= 0 {
+		return nil, fmt.Errorf("Pkcs7Padding: invalid blockSize %d", blockSize)
+	}
+
+	paddedCnt := blockSize - (len(plaintext) % blockSize)
+	paddedByte := byte(paddedCnt)
+
+	cipher := append(plaintext, bytes.Repeat([]byte{paddedByte}, paddedCnt)...)
+
+	return cipher, nil
 }
 
 // FindRepeatKeySize returns the most possible repeat-key size for the cipher
