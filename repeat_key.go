@@ -23,8 +23,7 @@ func RepeatKeyXor(key []byte, str []byte) ([]byte, error) {
 	return []byte(hex.EncodeToString(xor)), nil
 }
 
-// DecryptRepeatKeyXor decrypts the cipher which the original
-// string is xor'ed by repeat-key
+// DecryptRepeatKeyXor decrypts the cipher that is xor encrypted with repeat-key
 func DecryptRepeatKeyXor(cipher []byte) ([]byte, error) {
 	decodedCipher, err := base64.StdEncoding.DecodeString(string(cipher))
 	if err != nil {
@@ -40,11 +39,11 @@ func DecryptRepeatKeyXor(cipher []byte) ([]byte, error) {
 			curBlock = append(curBlock, decodedCipher[j])
 		}
 
-		singleKey, err := FindSingleKeyForXorCipher(curBlock)
+		singleByte, err := FindSingleXorByte(curBlock)
 		if err != nil {
 			return nil, fmt.Errorf("DecryptRepeatKeyXor: %v", err)
 		}
-		key = append(key, singleKey)
+		key = append(key, singleByte)
 	}
 
 	decrypted, err := RepeatKeyXor(key, decodedCipher)

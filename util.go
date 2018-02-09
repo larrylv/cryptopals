@@ -1,16 +1,12 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"fmt"
-	"math"
 	"math/bits"
-	"os"
 )
 
 // HexToBase64 converts a hex string to base64 encoded string
@@ -45,73 +41,6 @@ func SingleByteXor(key byte, a []byte) ([]byte, error) {
 	b := bytes.Repeat([]byte{key}, len(a))
 
 	return Xor(a, b)
-}
-
-// FindSingleKeyForXorCipher finds the single key which is used to XOR
-// the original message
-func FindSingleKeyForXorCipher(cipher []byte) (byte, error) {
-	maxScore := math.Inf(-1)
-	var resKey byte
-
-	for key := 0; key <= 255; key++ {
-		s, err := SingleByteXor(byte(key), cipher)
-		if err != nil {
-			return byte(0), fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
-		}
-
-		tmpScore := ScoringEnglish(s)
-		if tmpScore > maxScore {
-			maxScore = tmpScore
-			resKey = byte(key)
-		}
-	}
-
-	return resKey, nil
-}
-
-// DetectStringBeingXoredWithSingleKey detects one line in a file
-// being XOR'ed by a single key
-func DetectStringBeingXoredWithSingleKey(filename string) ([]byte, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: got an error %v", err)
-	}
-	defer file.Close()
-
-	maxScore := 0.0
-	var result []byte
-
-	reader := bufio.NewReader(file)
-	for {
-		curLine, _, err := reader.ReadLine()
-		if err != nil {
-			break
-		}
-
-		curDecoded, err := hex.DecodeString(string(curLine))
-		if err != nil {
-			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
-		}
-
-		curKey, err := FindSingleKeyForXorCipher(curDecoded)
-		if err != nil {
-			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
-		}
-
-		curDecrypted, err := SingleByteXor(curKey, curDecoded)
-		if err != nil {
-			return nil, fmt.Errorf("DetectStringBeingXoredWithSingleKey: %v", err)
-		}
-
-		curScore := ScoringEnglish(curDecrypted)
-		if curScore > maxScore {
-			maxScore = curScore
-			result = make([]byte, len(curDecrypted))
-			copy(result, curDecrypted)
-		}
-	}
-
-	return result, nil
 }
 
 // HammingDistance returns Hamming distance of two strings, which is the number of differing bits
