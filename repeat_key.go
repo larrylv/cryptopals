@@ -80,7 +80,6 @@ func findRepeatKeySize(ciphertext []byte) int {
 		}
 
 		distance /= float64(cnt * i)
-
 		if distance < minDistance {
 			keySize = i
 			minDistance = distance

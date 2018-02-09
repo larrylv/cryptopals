@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"fmt"
 	"strconv"
 )
 
@@ -44,6 +45,12 @@ func NewAesEcbCipher(key []byte) (*AesEcbCipher, error) {
 
 // Encrypt of AesEcbCipher implements Encrypt function of aesCipher interface
 func (cipher *AesEcbCipher) Encrypt(plaintext []byte) []byte {
+	plaintext, err := PKCS7Padding(plaintext, BlockSize)
+	if err != nil {
+		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
+		return nil
+	}
+
 	encrypted := make([]byte, len(plaintext))
 	for bs, be := 0, BlockSize; be <= len(plaintext); bs, be = bs+BlockSize, be+BlockSize {
 		cipher.cipherBlock.Encrypt(encrypted[bs:be], plaintext[bs:be])
@@ -57,6 +64,11 @@ func (cipher *AesEcbCipher) Decrypt(ciphertext []byte) []byte {
 	decrypted := make([]byte, len(ciphertext))
 	for bs, be := 0, BlockSize; be <= len(ciphertext); bs, be = bs+BlockSize, be+BlockSize {
 		cipher.cipherBlock.Decrypt(decrypted[bs:be], ciphertext[bs:be])
+	}
+	if len(decrypted) > 1 {
+		paddedByte := decrypted[len(decrypted)-1]
+		endIdx := len(decrypted) - int(paddedByte)
+		decrypted = decrypted[:endIdx]
 	}
 
 	return decrypted

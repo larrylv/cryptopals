@@ -11,7 +11,7 @@ import (
 )
 
 func TestAesEcbCipherEncrypt(t *testing.T) {
-	plaintext := "Play that funky "
+	plaintext := "Play that funky music"
 	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)

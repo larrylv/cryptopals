@@ -63,7 +63,6 @@ func PKCS7Padding(plaintext []byte, blockSize int) ([]byte, error) {
 
 	paddedCnt := blockSize - (len(plaintext) % blockSize)
 	paddedByte := byte(paddedCnt)
-
 	paddedText := append(plaintext, bytes.Repeat([]byte{paddedByte}, paddedCnt)...)
 
 	return paddedText, nil
