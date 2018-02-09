@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/aes"
 	"encoding/base64"
 	"fmt"
@@ -28,16 +27,18 @@ func DecryptAesEcbCipher(key, cipher []byte) ([]byte, error) {
 	return decrypted, nil
 }
 
-// Pkcs7Padding implements PCKS#7 padding
-func Pkcs7Padding(plaintext []byte, blockSize int) ([]byte, error) {
-	if blockSize > 255 || blockSize <= 0 {
-		return nil, fmt.Errorf("Pkcs7Padding: invalid blockSize %d", blockSize)
+// DetectAesInEcbMode returns if the cipher is encrypted with AES in ECB mode
+func DetectAesInEcbMode(cipher []byte) bool {
+	m := make(map[string]bool)
+	blockSize := aes.BlockSize
+
+	for i := 0; i+1 <= len(cipher)/blockSize; i++ {
+		block := cipher[i*blockSize : (i+1)*blockSize]
+		if m[string(block)] {
+			return true
+		}
+		m[string(block)] = true
 	}
 
-	paddedCnt := blockSize - (len(plaintext) % blockSize)
-	paddedByte := byte(paddedCnt)
-
-	cipher := append(plaintext, bytes.Repeat([]byte{paddedByte}, paddedCnt)...)
-
-	return cipher, nil
+	return false
 }

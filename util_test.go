@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/hex"
-	"os"
 	"testing"
 )
 
@@ -46,39 +44,17 @@ func TestHammingDistance(t *testing.T) {
 	}
 }
 
-func TestDetectAesInEcbMode(t *testing.T) {
-	filename := "./data/set_1_challege_8.txt"
-	file, err := os.Open(filename)
+func TestPkcs7Padding(t *testing.T) {
+	plaintext := []byte("YELLOW SUBMARINE")
+	expectedCipher := []byte("YELLOW SUBMARINE\x04\x04\x04\x04")
+
+	cipher, err := Pkcs7Padding([]byte(plaintext), 20)
 	if err != nil {
-		t.Errorf("TestDetectAesInEcbMode: got an error %v", err)
+		t.Errorf("TestPkcs7Padding: got an error %v", err)
 		return
 	}
-	defer file.Close()
 
-	var result []byte
-	reader := bufio.NewReader(file)
-
-	for {
-		curLine, _, err := reader.ReadLine()
-		if err != nil {
-			break
-		}
-
-		curDecoded, err := hex.DecodeString(string(curLine))
-		if err != nil {
-			t.Errorf("TestDetectAesInEcbMode: got an error %v", err)
-			return
-		}
-
-		if DetectAesInEcbMode(curDecoded) {
-			result = make([]byte, len(curLine))
-			copy(result, curLine)
-			break
-		}
-	}
-
-	expected := `d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d69c744cd283e2dd052f6b641dbf9d11b0348542bb5708649af70dc06f4fd5d2d69c744cd2839475c9dfdbc1d46597949d9c7e82bf5a08649af70dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b0308649af70dc06f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b29933f2c123c58386b06fba186a`
-	if bytes.Compare(result, []byte(expected)) != 0 {
-		t.Errorf("TestDetectAesInEcbMode: expected %s, got %s\n", expected, result)
+	if bytes.Compare([]byte(expectedCipher), cipher) != 0 {
+		t.Errorf("TestPkcs7Padding: expected %v, got %v", expectedCipher, cipher)
 	}
 }
