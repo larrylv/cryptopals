@@ -12,22 +12,23 @@ import (
 )
 
 func TestAesEcbCipherEncrypt(t *testing.T) {
-	plaintext, err := PKCS7Padding([]byte("Play that funky music"), BlockSize)
+	plaintext := "Play that funky music"
+	paddedPlainText, err := PKCS7Padding([]byte(plaintext), BlockSize)
 	if err != nil {
 		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
 		return
 	}
 
-	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
+	cipher, err := NewAesCipher([]byte("YELLOW SUBMARINE"), EcbMode)
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
 		return
 	}
 
-	encrypted := cipher.Encrypt([]byte(plaintext))
-	// fmt.Printf("%s\n", base64.StdEncoding.EncodeToString(encrypted))
-
+	encrypted := cipher.Encrypt([]byte(paddedPlainText))
 	decrypted := cipher.Decrypt(encrypted)
+
+	// fmt.Printf("%v %v\n", paddedPlainText, decrypted)
 	if bytes.Compare([]byte(plaintext), decrypted) != 0 {
 		t.Errorf("TestAesEcbCipherEncrypt: sth wrong with the encryption or decryption, got %s after decryption", decrypted)
 	}
@@ -47,7 +48,7 @@ func TestAesEcbCipherDecrypt(t *testing.T) {
 		return
 	}
 
-	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
+	cipher, err := NewAesCipher([]byte("YELLOW SUBMARINE"), EcbMode)
 	if err != nil {
 		t.Errorf("TestAesEcbCipherDecrypt: got an error %v", err)
 		return

@@ -7,10 +7,21 @@ import (
 	"strconv"
 )
 
-// type aesCipher interface {
-// 	Encrypt(plaintext []byte) []byte
-// 	Decrypt(ciphertext []byte) []byte
-// }
+// EncryptionMode - shut up golint
+type EncryptionMode int
+
+const (
+	// EcbMode - shut up golint
+	EcbMode EncryptionMode = iota
+	// CbcMode - shut up golint
+	CbcMode
+)
+
+// AesCipher - ECB or CBC mode
+type AesCipher interface {
+	Encrypt(plaintext []byte) []byte
+	Decrypt(ciphertext []byte) []byte
+}
 
 // AesEcbCipher is just an AES ECB mode cipher...
 type AesEcbCipher struct {
@@ -27,15 +38,19 @@ func (k KeySizeError) Error() string {
 // BlockSize is the AES block size in bytes.
 const BlockSize = 16
 
-// NewAesEcbCipher returns an AES-128 ECB mode cipher
-func NewAesEcbCipher(key []byte) (*AesEcbCipher, error) {
+// NewAesCipher returns an AES-128 cipher
+func NewAesCipher(key []byte, mode EncryptionMode) (AesCipher, error) {
 	switch len(key) {
 	case 16, 24, 32:
 		cipherBlock, err := aes.NewCipher(key)
 		if err != nil {
 			return nil, err
 		}
-		return &AesEcbCipher{cipherBlock}, nil
+
+		if mode == EcbMode {
+			return &AesEcbCipher{cipherBlock}, nil
+		}
+		return nil, fmt.Errorf("unknown encryption mode: %v", mode)
 	default:
 		break
 	}
@@ -45,12 +60,6 @@ func NewAesEcbCipher(key []byte) (*AesEcbCipher, error) {
 
 // Encrypt of AesEcbCipher implements Encrypt function of aesCipher interface
 func (cipher *AesEcbCipher) Encrypt(plaintext []byte) []byte {
-	plaintext, err := PKCS7Padding(plaintext, BlockSize)
-	if err != nil {
-		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
-		return nil
-	}
-
 	encrypted := make([]byte, len(plaintext))
 	for bs, be := 0, BlockSize; be <= len(plaintext); bs, be = bs+BlockSize, be+BlockSize {
 		cipher.cipherBlock.Encrypt(encrypted[bs:be], plaintext[bs:be])
