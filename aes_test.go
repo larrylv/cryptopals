@@ -5,13 +5,19 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func TestAesEcbCipherEncrypt(t *testing.T) {
-	plaintext := "Play that funky music"
+	plaintext, err := PKCS7Padding([]byte("Play that funky music"), BlockSize)
+	if err != nil {
+		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
+		return
+	}
+
 	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
