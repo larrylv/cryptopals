@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ func TestXorWithRepeatKey(t *testing.T) {
 }
 
 func TestDecryptStringXoredWithRepeatKey(t *testing.T) {
-	filename := "./data/set_1_challege_6.txt"
+	filename := "../data/set_1_challege_6.txt"
 	cipher, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Errorf("TestDecryptStringXoredWithRepeatKey: got an error %v", err)

@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"encoding/hex"
@@ -19,7 +19,7 @@ func TestFindSingleXorByte(t *testing.T) {
 }
 
 func TestDetectStringXoredWithSingleKey(t *testing.T) {
-	decryptedLine, err := DetectStringXoredWithSingleKey("./data/set_1_challege_4.txt")
+	decryptedLine, err := DetectStringXoredWithSingleKey("../data/set_1_challege_4.txt")
 	expectedLine := "Now that the party is jumping\n"
 	if err != nil {
 		t.Errorf("DetectStringXoredWithSingleKey: got an error %v\n", err)

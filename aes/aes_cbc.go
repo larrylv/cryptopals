@@ -1,18 +1,20 @@
-package main
+package aes
 
 import (
 	"crypto/aes"
 	"fmt"
+
+	"github.com/larrylv/cryptopals/util"
 )
 
-// AesCbcCipher is just an AES CBC mode cipher...
-type AesCbcCipher struct {
-	ecbCipher *AesEcbCipher
+// CbcCipher is just an AES CBC mode cipher...
+type CbcCipher struct {
+	ecbCipher *EcbCipher
 	iv        []byte
 }
 
 // NewAesCbcCipher returns an AES CBC cipher
-func NewAesCbcCipher(key []byte, iv []byte) (*AesCbcCipher, error) {
+func NewAesCbcCipher(key []byte, iv []byte) (*CbcCipher, error) {
 	if len(iv) != aes.BlockSize {
 		return nil, fmt.Errorf("IV length must equal block size")
 	}
@@ -22,15 +24,15 @@ func NewAesCbcCipher(key []byte, iv []byte) (*AesCbcCipher, error) {
 		return nil, err
 	}
 
-	return &AesCbcCipher{
-		ecbCipher: &AesEcbCipher{cipherBlock},
+	return &CbcCipher{
+		ecbCipher: &EcbCipher{cipherBlock},
 		iv:        iv,
 	}, nil
 }
 
 // Encrypt of AesCbcCipher implements Encrypt function of aesCipher interface
-func (cipher *AesCbcCipher) Encrypt(plaintext []byte) []byte {
-	paddedPlainText, err := PKCS7Padding([]byte(plaintext), aes.BlockSize)
+func (cipher *CbcCipher) Encrypt(plaintext []byte) []byte {
+	paddedPlainText, err := util.PKCS7Padding([]byte(plaintext), aes.BlockSize)
 	if err != nil {
 		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
 		return nil
@@ -42,7 +44,7 @@ func (cipher *AesCbcCipher) Encrypt(plaintext []byte) []byte {
 
 	for bs, be := 0, aes.BlockSize; be <= len(paddedPlainText); bs, be = bs+aes.BlockSize, be+aes.BlockSize {
 		// ignore the error since curIV and the block will always have the same size
-		combinedText, _ := Xor(paddedPlainText[bs:be], curIV)
+		combinedText, _ := util.Xor(paddedPlainText[bs:be], curIV)
 		copy(encrypted[bs:be], cipher.ecbCipher.BlockEncrypt(combinedText))
 		copy(curIV, encrypted[bs:be])
 	}
@@ -51,14 +53,14 @@ func (cipher *AesCbcCipher) Encrypt(plaintext []byte) []byte {
 }
 
 // Decrypt of AesCbcCipher implements Decrypt function of aesCipher interface
-func (cipher *AesCbcCipher) Decrypt(ciphertext []byte) []byte {
+func (cipher *CbcCipher) Decrypt(ciphertext []byte) []byte {
 	curIV := make([]byte, len(cipher.iv))
 	copy(curIV, cipher.iv)
 	decrypted := make([]byte, len(ciphertext))
 
 	for bs, be := 0, aes.BlockSize; be <= len(ciphertext); bs, be = bs+aes.BlockSize, be+aes.BlockSize {
 		// ignore the error since curIV and the block will always have the same size
-		combinedText, _ := Xor(cipher.ecbCipher.BlockDecrypt(ciphertext[bs:be]), curIV)
+		combinedText, _ := util.Xor(cipher.ecbCipher.BlockDecrypt(ciphertext[bs:be]), curIV)
 		copy(decrypted[bs:be], combinedText)
 		copy(curIV, ciphertext[bs:be])
 	}

@@ -1,4 +1,4 @@
-package main
+package aes
 
 import (
 	"bufio"
@@ -29,7 +29,7 @@ func TestAesEcbCipherEncrypt(t *testing.T) {
 }
 
 func TestAesEcbCipherDecrypt(t *testing.T) {
-	filename := "./data/set_1_challege_7.txt"
+	filename := "../data/set_1_challege_7.txt"
 	ciphertext, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Errorf("TestAesEcbCipherDecrypt: got an error %v", err)
@@ -57,7 +57,7 @@ func TestAesEcbCipherDecrypt(t *testing.T) {
 }
 
 func TestIsEncryptedWithAesEcbMode(t *testing.T) {
-	filename := "./data/set_1_challege_8.txt"
+	filename := "../data/set_1_challege_8.txt"
 	file, err := os.Open(filename)
 	if err != nil {
 		t.Errorf("TestIsEncryptedWithAesEcbMode: got an error %v", err)

@@ -1,4 +1,4 @@
-package main
+package aes
 
 import (
 	"bytes"
@@ -27,7 +27,7 @@ func TestAesCbcCipherEncrypt(t *testing.T) {
 }
 
 func TestAesCbcCipherDecrypt(t *testing.T) {
-	filename := "./data/set_2_challege_10.txt"
+	filename := "../data/set_2_challege_10.txt"
 	ciphertext, err := ioutil.ReadFile(filename)
 	if err != nil {
 		t.Errorf("TestAesCbcCipherDecrypt: got an error %v", err)
