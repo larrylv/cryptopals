@@ -6,7 +6,7 @@
 
 ### Challenge 1. Convert hex to base64
 
-Link: http://cryptopals.com/sets/1/challenges/1
+http://cryptopals.com/sets/1/challenges/1
 
 ```
 go test ./util/... -run='TestHexToBase64'
@@ -14,7 +14,7 @@ go test ./util/... -run='TestHexToBase64'
 
 ### Challenge 2. Fixed XOR
 
-Link: http://cryptopals.com/sets/1/challenges/2
+http://cryptopals.com/sets/1/challenges/2
 
 ```
 go test ./util/... -run='TestXor'
@@ -22,7 +22,7 @@ go test ./util/... -run='TestXor'
 
 ### Challenge 3. Single-byte XOR cipher
 
-Link: http://cryptopals.com/sets/1/challenges/3
+http://cryptopals.com/sets/1/challenges/3
 
 ```
 go test ./util/... -run='TestFindSingleXorByte'
@@ -30,7 +30,7 @@ go test ./util/... -run='TestFindSingleXorByte'
 
 ### Challenge 4. Detect single-character XOR
 
-Link: http://cryptopals.com/sets/1/challenges/4
+http://cryptopals.com/sets/1/challenges/4
 
 ```
 go test ./util/... -run='TestDetectStringXoredWithSingleKey'
@@ -38,7 +38,7 @@ go test ./util/... -run='TestDetectStringXoredWithSingleKey'
 
 ### Challenge 5. Implement repeating-key XOR
 
-Link: http://cryptopals.com/sets/1/challenges/5
+http://cryptopals.com/sets/1/challenges/5
 
 ```
 go test ./util/... -run='TestXorWithRepeatKey'
@@ -46,7 +46,7 @@ go test ./util/... -run='TestXorWithRepeatKey'
 
 ### Challenge 6. Break repeating-key XOR
 
-Link: http://cryptopals.com/sets/1/challenges/6
+http://cryptopals.com/sets/1/challenges/6
 
 ```
 go test ./util/... -run='TestDecryptStringXoredWithRepeatKey'
@@ -54,7 +54,7 @@ go test ./util/... -run='TestDecryptStringXoredWithRepeatKey'
 
 ### Challenge 7. AES in ECB mode
 
-Link: http://cryptopals.com/sets/1/challenges/7
+http://cryptopals.com/sets/1/challenges/7
 
 ```
 go test ./aes/... -run='TestAesEcbCipherEncrypt'
@@ -63,7 +63,7 @@ go test ./aes/... -run='TestAesEcbCipherDecrypt'
 
 ### Challenge 8. Detect AES in ECB mode
 
-Link: http://cryptopals.com/sets/1/challenges/8
+http://cryptopals.com/sets/1/challenges/8
 
 ```
 go test ./aes/... -run='TestIsEncryptedWithAesEcbMode'
@@ -73,7 +73,7 @@ go test ./aes/... -run='TestIsEncryptedWithAesEcbMode'
 
 ### Challenge 9. Implement PKCS#7 padding
 
-Link: http://cryptopals.com/sets/2/challenges/9
+http://cryptopals.com/sets/2/challenges/9
 
 ```
 go test ./util/... -run='TestPKCS7Padding'
@@ -81,7 +81,7 @@ go test ./util/... -run='TestPKCS7Padding'
 
 ### Challenge 10. Implement CBC mode
 
-Link: http://cryptopals.com/sets/2/challenges/10
+http://cryptopals.com/sets/2/challenges/10
 
 ```
 go test ./aes/... -run='TestAesCbcCipherEncrypt'
@@ -90,7 +90,7 @@ go test ./aes/... -run='TestAesCbcCipherDecrypt'
 
 ### Challenge 11. An ECB/CBC detection oracle
 
-Link: http://cryptopals.com/sets/2/challenges/11
+http://cryptopals.com/sets/2/challenges/11
 
 ```
 go test ./aes/... -run='TestDetectionOracleForEcbMode'
@@ -99,7 +99,7 @@ go test ./aes/... -run='TestDetectionOracleForCbcMode'
 
 ### Challenge 12. Byte-at-a-time ECB decryption (Simple)
 
-Link: http://cryptopals.com/sets/2/challenges/12
+http://cryptopals.com/sets/2/challenges/12
 
 ```
 go test ./aes/... -run='TestDecryptSalt'
@@ -107,7 +107,7 @@ go test ./aes/... -run='TestDecryptSalt'
 
 ### Challenge 13. ECB cut-and-paste
 
-Link: http://cryptopals.com/sets/2/challenges/13
+http://cryptopals.com/sets/2/challenges/13
 
 ```
 go test ./aes/... -run='TestEcbCutAndPaste'
