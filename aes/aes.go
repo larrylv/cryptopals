@@ -18,12 +18,12 @@ func EncryptionOracle(plaintext []byte) ([]byte, error) {
 	rand.Seed(time.Now().Unix())
 
 	key := generateRandomBytes(aes.BlockSize)
-	plaintext = mungePlaintext(plaintext)
 	mode := rand.Intn(2)
 
 	return encryptWithMode(key, plaintext, mode)
 }
 
+// mode 0 for ECB mode, 1 for CBC mode
 func encryptWithMode(key []byte, plaintext []byte, mode int) ([]byte, error) {
 	var cipher Cipher
 	var err error
@@ -41,6 +41,8 @@ func encryptWithMode(key []byte, plaintext []byte, mode int) ([]byte, error) {
 		}
 
 	}
+
+	plaintext = mungePlaintext(plaintext)
 	return cipher.Encrypt(plaintext), nil
 }
 
