@@ -14,7 +14,7 @@ type EcbCipher struct {
 }
 
 // NewAesEcbCipher returns an AES ECB cipher
-func NewAesEcbCipher(key []byte) (*EcbCipher, error) {
+func NewAesEcbCipher(key []byte) (Cipher, error) {
 	cipherBlock, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err

@@ -14,7 +14,7 @@ type CbcCipher struct {
 }
 
 // NewAesCbcCipher returns an AES CBC cipher
-func NewAesCbcCipher(key []byte, iv []byte) (*CbcCipher, error) {
+func NewAesCbcCipher(key []byte, iv []byte) (Cipher, error) {
 	if len(iv) != aes.BlockSize {
 		return nil, fmt.Errorf("IV length must equal block size")
 	}
