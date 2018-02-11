@@ -1,7 +1,6 @@
 package aes
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
@@ -12,7 +11,6 @@ import (
 // EcbCipher is just an AES ECB mode cipher...
 type EcbCipher struct {
 	cipherBlock cipher.Block
-	salt        []byte
 	blockSize   int
 }
 
@@ -27,12 +25,6 @@ func NewAesEcbCipher(key []byte) (Cipher, error) {
 		cipherBlock: cipherBlock,
 		blockSize:   aes.BlockSize,
 	}, nil
-}
-
-// SetSalt - shut up golint
-func (cipher *EcbCipher) SetSalt(salt []byte) {
-	cipher.salt = make([]byte, len(salt))
-	copy(cipher.salt, salt)
 }
 
 // BlockEncrypt of AesEcbCipher encrypts exactly one block
@@ -105,76 +97,4 @@ func IsEncryptedWithAesEcbMode(ciphertext []byte) bool {
 	}
 
 	return false
-}
-
-// DetectBlockSize means shut up golint
-func (cipher *EcbCipher) DetectBlockSize() int {
-	var keySize int
-
-	for i := 1; i <= 128; i++ {
-		firstEncrypted := cipher.Encrypt(bytes.Repeat([]byte("A"), i))
-		secondEncrypted := cipher.Encrypt(bytes.Repeat([]byte("A"), i*2))
-		if bytes.Compare(firstEncrypted[:i], secondEncrypted[:i]) == 0 {
-			keySize = i
-			break
-		}
-	}
-
-	return keySize
-}
-
-// DecryptSalt returns the salt that is used when encrypting
-func (cipher *EcbCipher) DecryptSalt() []byte {
-	blockSize := cipher.DetectBlockSize()
-	saltSize := cipher.detectSaltSize()
-
-	salt := make([]byte, saltSize)
-	var leftPaddedPlainText []byte
-	curDetectionBlockPrefix := make([]byte, blockSize-1)
-
-	for i := 0; i < saltSize; i++ {
-		// padding some text in front so that current salt byte is the last byte of `blockIdx` block
-		leftPaddedPlainText = bytes.Repeat([]byte("A"), blockSize-i%blockSize-1)
-		// current salt byte is in the `blockIdx` block
-		blockIdx := i/blockSize + 1
-		if i >= blockSize {
-			copy(curDetectionBlockPrefix, salt[i-blockSize+1:i])
-		} else {
-			curDetectionBlockPrefix = append(leftPaddedPlainText, salt[0:i]...)
-		}
-
-		for b := 0; b < 256; b++ {
-			curDetectionBlock := append(curDetectionBlockPrefix, byte(b))
-			encrypted := cipher.encryptWithPostfixSalt(append(curDetectionBlock, leftPaddedPlainText...))
-			if bytes.Compare(encrypted[:blockSize], encrypted[blockIdx*blockSize:(blockIdx+1)*blockSize]) == 0 {
-				salt[i] = byte(b)
-				break
-			}
-		}
-	}
-
-	return salt
-}
-
-func (cipher *EcbCipher) encryptWithPostfixSalt(plaintext []byte) []byte {
-	if cipher.salt != nil && len(cipher.salt) > 0 {
-		plaintext = append(plaintext, cipher.salt...)
-	}
-	return cipher.Encrypt(plaintext)
-}
-
-func (cipher *EcbCipher) detectSaltSize() int {
-	saltSize := 0
-	blockSize := cipher.DetectBlockSize()
-	prevEncryptedSize := len(cipher.encryptWithPostfixSalt([]byte("")))
-
-	for i := 1; i <= blockSize; i++ {
-		curEncryptedSize := len(cipher.encryptWithPostfixSalt(bytes.Repeat([]byte("A"), i)))
-		if curEncryptedSize == prevEncryptedSize+blockSize {
-			saltSize = prevEncryptedSize - i
-			break
-		}
-	}
-
-	return saltSize
 }

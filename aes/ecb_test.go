@@ -97,60 +97,6 @@ func TestIsEncryptedWithAesEcbMode(t *testing.T) {
 	}
 }
 
-func TestDetectBlockSize(t *testing.T) {
-	encodedSalt := `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK`
-	salt, _ := base64.StdEncoding.DecodeString(encodedSalt)
-
-	key := generateRandomBytes(aes.BlockSize)
-	cipher, err := NewAesEcbCipher(key)
-	if err != nil {
-		t.Errorf("TestDetectBlockSize: got an error %v", err)
-		return
-	}
-	cipher.(*EcbCipher).SetSalt(salt)
-
-	keySize := cipher.(*EcbCipher).DetectBlockSize()
-	if keySize != aes.BlockSize {
-		t.Errorf("TestDetectBlockSize: expected %d, got %d", aes.BlockSize, keySize)
-	}
-}
-
-func TestDetectSaltSize(t *testing.T) {
-	for expectedSaltSize := 0; expectedSaltSize < 100; expectedSaltSize += 4 {
-		key := generateRandomBytes(aes.BlockSize)
-		salt := generateRandomBytes(expectedSaltSize)
-		cipher, err := NewAesEcbCipher(key)
-		if err != nil {
-			t.Errorf("TestDetectBlockSize: got an error %v", err)
-			return
-		}
-		cipher.(*EcbCipher).SetSalt(salt)
-
-		saltSize := cipher.(*EcbCipher).detectSaltSize()
-		if expectedSaltSize != saltSize {
-			t.Errorf("TestDetectSaltSize: expected %d, got %d", expectedSaltSize, saltSize)
-		}
-	}
-}
-
-func TestDecryptSalt(t *testing.T) {
-	key := generateRandomBytes(aes.BlockSize)
-	encodedSalt := `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK`
-	expectedSalt, _ := base64.StdEncoding.DecodeString(encodedSalt)
-	cipher, err := NewAesEcbCipher(key)
-	if err != nil {
-		t.Errorf("TestDetectBlockSize: got an error %v", err)
-		return
-	}
-	cipher.(*EcbCipher).SetSalt(expectedSalt)
-
-	salt := cipher.(*EcbCipher).DecryptSalt()
-	if bytes.Compare(expectedSalt, salt) != 0 {
-		t.Errorf("TestDecryptSalt: expected %s, got %v", expectedSalt, salt)
-		return
-	}
-}
-
 func TestEcbCutAndPaste(t *testing.T) {
 	key := generateRandomBytes(aes.BlockSize)
 	cipher, err := NewAesEcbCipher(key)
