@@ -29,7 +29,7 @@ func encryptWithMode(key []byte, plaintext []byte, mode int) ([]byte, error) {
 	var err error
 
 	if mode == 0 { // ECB
-		cipher, err = NewAesEcbCipher(key)
+		cipher, err = NewAesEcbCipher(key, nil)
 		if err != nil {
 			return nil, err
 		}

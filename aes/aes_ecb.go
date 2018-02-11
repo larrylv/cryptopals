@@ -1,6 +1,7 @@
 package aes
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
@@ -11,22 +12,28 @@ import (
 // EcbCipher is just an AES ECB mode cipher...
 type EcbCipher struct {
 	cipherBlock cipher.Block
+	salt        []byte
+	blockSize   int
 }
 
 // NewAesEcbCipher returns an AES ECB cipher
-func NewAesEcbCipher(key []byte) (Cipher, error) {
+func NewAesEcbCipher(key, salt []byte) (Cipher, error) {
 	cipherBlock, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 
-	return &EcbCipher{cipherBlock}, nil
+	return &EcbCipher{
+		cipherBlock: cipherBlock,
+		salt:        salt,
+		blockSize:   aes.BlockSize,
+	}, nil
 
 }
 
 // BlockEncrypt of AesEcbCipher encrypts exactly one block
 func (cipher *EcbCipher) BlockEncrypt(plaintext []byte) []byte {
-	if len(plaintext) != aes.BlockSize {
+	if len(plaintext) != cipher.blockSize {
 		return nil
 	}
 
@@ -38,14 +45,17 @@ func (cipher *EcbCipher) BlockEncrypt(plaintext []byte) []byte {
 
 // Encrypt of AesEcbCipher implements Encrypt function of aesCipher interface
 func (cipher *EcbCipher) Encrypt(plaintext []byte) []byte {
-	paddedPlainText, err := util.PKCS7Padding([]byte(plaintext), aes.BlockSize)
+	if cipher.salt != nil && len(cipher.salt) > 0 {
+		plaintext = append(plaintext, cipher.salt...)
+	}
+	paddedPlainText, err := util.PKCS7Padding([]byte(plaintext), cipher.blockSize)
 	if err != nil {
 		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
 		return nil
 	}
 
 	encrypted := make([]byte, len(paddedPlainText))
-	for bs, be := 0, aes.BlockSize; be <= len(paddedPlainText); bs, be = bs+aes.BlockSize, be+aes.BlockSize {
+	for bs, be := 0, cipher.blockSize; be <= len(paddedPlainText); bs, be = bs+cipher.blockSize, be+cipher.blockSize {
 		copy(encrypted[bs:be], cipher.BlockEncrypt(paddedPlainText[bs:be]))
 	}
 
@@ -54,7 +64,7 @@ func (cipher *EcbCipher) Encrypt(plaintext []byte) []byte {
 
 // BlockDecrypt of AesEcbCipher decrypts exactly one block
 func (cipher *EcbCipher) BlockDecrypt(ciphertext []byte) []byte {
-	if len(ciphertext) != aes.BlockSize {
+	if len(ciphertext) != cipher.blockSize {
 		return nil
 	}
 
@@ -67,7 +77,7 @@ func (cipher *EcbCipher) BlockDecrypt(ciphertext []byte) []byte {
 // Decrypt of AesEcbCipher implements Decrypt function of aesCipher interface
 func (cipher *EcbCipher) Decrypt(ciphertext []byte) []byte {
 	decrypted := make([]byte, len(ciphertext))
-	for bs, be := 0, aes.BlockSize; be <= len(ciphertext); bs, be = bs+aes.BlockSize, be+aes.BlockSize {
+	for bs, be := 0, cipher.blockSize; be <= len(ciphertext); bs, be = bs+cipher.blockSize, be+cipher.blockSize {
 		copy(decrypted[bs:be], cipher.BlockDecrypt(ciphertext[bs:be]))
 	}
 
@@ -78,6 +88,29 @@ func (cipher *EcbCipher) Decrypt(ciphertext []byte) []byte {
 	}
 
 	return decrypted
+}
+
+// DecryptSalt returns the salt that is used when encrypting
+func (cipher *EcbCipher) DecryptSalt() []byte {
+	blockSize := cipher.detectBlockSize()
+	saltSize := cipher.detectSaltSize()
+
+	salt := make([]byte, saltSize)
+	var leftPaddedPlainText []byte
+	var curBlockPrefix []byte
+
+	for i := 0; i < saltSize; i++ {
+		if i >= blockSize {
+			leftPaddedPlainText = bytes.Repeat([]byte("A"), blockSize-i%blockSize-1)
+			curBlockPrefix = salt[i-blockSize+1 : i]
+		} else {
+			leftPaddedPlainText = bytes.Repeat([]byte("A"), blockSize-i-1)
+			curBlockPrefix = append(leftPaddedPlainText, salt[0:i]...)
+		}
+		salt[i] = cipher.detectSaltByte(curBlockPrefix, leftPaddedPlainText, (i/blockSize + 1), blockSize)
+	}
+
+	return salt
 }
 
 // IsEncryptedWithAesEcbMode returns if the ciphertext is encrypted with AES in ECB mode
@@ -94,4 +127,46 @@ func IsEncryptedWithAesEcbMode(ciphertext []byte) bool {
 	}
 
 	return false
+}
+
+func (cipher *EcbCipher) detectSaltByte(blockPrefix, leftPaddedPlainText []byte, blockIdx, blockSize int) byte {
+	for b := 0; b < 256; b++ {
+		prefixPlaintext := append(blockPrefix, byte(b))
+		encrypted := cipher.Encrypt(append(prefixPlaintext, leftPaddedPlainText...))
+		if bytes.Compare(encrypted[:blockSize], encrypted[blockIdx*blockSize:(blockIdx+1)*blockSize]) == 0 {
+			return byte(b)
+		}
+	}
+	return byte(0)
+}
+
+func (cipher *EcbCipher) detectBlockSize() int {
+	var keySize int
+
+	for i := 1; i <= 128; i++ {
+		firstEncrypted := cipher.Encrypt(bytes.Repeat([]byte("A"), i))
+		secondEncrypted := cipher.Encrypt(bytes.Repeat([]byte("A"), i*2))
+		if bytes.Compare(firstEncrypted[:i], secondEncrypted[:i]) == 0 {
+			keySize = i
+			break
+		}
+	}
+
+	return keySize
+}
+
+func (cipher *EcbCipher) detectSaltSize() int {
+	saltSize := 0
+	blockSize := cipher.detectBlockSize()
+	prevEncryptedSize := len(cipher.Encrypt([]byte("")))
+
+	for i := 1; i <= blockSize; i++ {
+		curEncryptedSize := len(cipher.Encrypt(bytes.Repeat([]byte("A"), i)))
+		if curEncryptedSize == prevEncryptedSize+blockSize {
+			saltSize = prevEncryptedSize - i
+			break
+		}
+	}
+
+	return saltSize
 }
