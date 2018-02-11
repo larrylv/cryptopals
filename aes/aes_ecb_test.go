@@ -6,9 +6,12 @@ import (
 	"crypto/aes"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/larrylv/cryptopals/util"
 )
 
 func TestAesEcbCipherEncrypt(t *testing.T) {
@@ -106,7 +109,7 @@ func TestDetectBlockSize(t *testing.T) {
 	}
 	cipher.(*EcbCipher).SetSalt(salt)
 
-	keySize := cipher.(*EcbCipher).detectBlockSize()
+	keySize := cipher.(*EcbCipher).DetectBlockSize()
 	if keySize != aes.BlockSize {
 		t.Errorf("TestDetectBlockSize: expected %d, got %d", aes.BlockSize, keySize)
 	}
@@ -146,4 +149,35 @@ func TestDecryptSalt(t *testing.T) {
 		t.Errorf("TestDecryptSalt: expected %s, got %v", expectedSalt, salt)
 		return
 	}
+}
+
+func TestEcbCutAndPaste(t *testing.T) {
+	key := generateRandomBytes(aes.BlockSize)
+	cipher, err := NewAesEcbCipher(key)
+	if err != nil {
+		t.Errorf("TestEcbCutAndPaste: got an error %v", err)
+		return
+	}
+
+	// build an whole block with `email=AAA...`
+	adminEmail := bytes.Repeat([]byte("A"), aes.BlockSize-len("email="))
+	padded, _ := util.PKCS7Padding([]byte("admin"), aes.BlockSize)
+	adminEmail = append(adminEmail, padded...)
+	// Encryption text of `admin` with appended padding text will be the second block
+	adminEncrypted := cipher.Encrypt(profileFor(adminEmail))[aes.BlockSize : aes.BlockSize*2]
+
+	// first two blocks would be: `email=A...&uid=10&role=`
+	detectionEmail := bytes.Repeat([]byte("A"), aes.BlockSize-len("email=&uid=10&role=")%aes.BlockSize)
+	detectionEncrypted := cipher.Encrypt(profileFor(detectionEmail))[:aes.BlockSize*2]
+
+	expectedProfile := []byte("email=AAAAAAAAAAAAA&uid=10&role=admin")
+	decryptedProfile := cipher.Decrypt(append(detectionEncrypted, adminEncrypted...))
+	if bytes.Compare(expectedProfile, decryptedProfile) != 0 {
+		t.Errorf("TestEcbCutAndPaste: expected %s, got %s", expectedProfile, decryptedProfile)
+	}
+}
+
+// I didn't do any escape for email, but in real world, we should
+func profileFor(email []byte) []byte {
+	return []byte(fmt.Sprintf("email=%s&uid=10&role=user", string(email)))
 }

@@ -115,7 +115,8 @@ func IsEncryptedWithAesEcbMode(ciphertext []byte) bool {
 	return false
 }
 
-func (cipher *EcbCipher) detectBlockSize() int {
+// DetectBlockSize means shut up golint
+func (cipher *EcbCipher) DetectBlockSize() int {
 	var keySize int
 
 	for i := 1; i <= 128; i++ {
@@ -132,7 +133,7 @@ func (cipher *EcbCipher) detectBlockSize() int {
 
 // DecryptSalt returns the salt that is used when encrypting
 func (cipher *EcbCipher) DecryptSalt() []byte {
-	blockSize := cipher.detectBlockSize()
+	blockSize := cipher.DetectBlockSize()
 	saltSize := cipher.detectSaltSize()
 
 	salt := make([]byte, saltSize)
@@ -165,7 +166,7 @@ func (cipher *EcbCipher) DecryptSalt() []byte {
 
 func (cipher *EcbCipher) detectSaltSize() int {
 	saltSize := 0
-	blockSize := cipher.detectBlockSize()
+	blockSize := cipher.DetectBlockSize()
 	prevEncryptedSize := len(cipher.EncryptOracle([]byte("")))
 
 	for i := 1; i <= blockSize; i++ {
