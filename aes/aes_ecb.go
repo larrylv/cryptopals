@@ -63,14 +63,6 @@ func (cipher *EcbCipher) Encrypt(plaintext []byte) []byte {
 	return encrypted
 }
 
-// EncryptOracle of EcbCipher will append a salt string to plaintext before encrypting
-func (cipher *EcbCipher) EncryptOracle(plaintext []byte) []byte {
-	if cipher.salt != nil && len(cipher.salt) > 0 {
-		plaintext = append(plaintext, cipher.salt...)
-	}
-	return cipher.Encrypt(plaintext)
-}
-
 // BlockDecrypt of AesEcbCipher decrypts exactly one block
 func (cipher *EcbCipher) BlockDecrypt(ciphertext []byte) []byte {
 	if len(ciphertext) != cipher.blockSize {
@@ -153,7 +145,7 @@ func (cipher *EcbCipher) DecryptSalt() []byte {
 
 		for b := 0; b < 256; b++ {
 			curDetectionBlock := append(curDetectionBlockPrefix, byte(b))
-			encrypted := cipher.EncryptOracle(append(curDetectionBlock, leftPaddedPlainText...))
+			encrypted := cipher.encryptWithPostfixSalt(append(curDetectionBlock, leftPaddedPlainText...))
 			if bytes.Compare(encrypted[:blockSize], encrypted[blockIdx*blockSize:(blockIdx+1)*blockSize]) == 0 {
 				salt[i] = byte(b)
 				break
@@ -164,13 +156,20 @@ func (cipher *EcbCipher) DecryptSalt() []byte {
 	return salt
 }
 
+func (cipher *EcbCipher) encryptWithPostfixSalt(plaintext []byte) []byte {
+	if cipher.salt != nil && len(cipher.salt) > 0 {
+		plaintext = append(plaintext, cipher.salt...)
+	}
+	return cipher.Encrypt(plaintext)
+}
+
 func (cipher *EcbCipher) detectSaltSize() int {
 	saltSize := 0
 	blockSize := cipher.DetectBlockSize()
-	prevEncryptedSize := len(cipher.EncryptOracle([]byte("")))
+	prevEncryptedSize := len(cipher.encryptWithPostfixSalt([]byte("")))
 
 	for i := 1; i <= blockSize; i++ {
-		curEncryptedSize := len(cipher.EncryptOracle(bytes.Repeat([]byte("A"), i)))
+		curEncryptedSize := len(cipher.encryptWithPostfixSalt(bytes.Repeat([]byte("A"), i)))
 		if curEncryptedSize == prevEncryptedSize+blockSize {
 			saltSize = prevEncryptedSize - i
 			break
