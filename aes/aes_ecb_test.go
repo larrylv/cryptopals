@@ -14,7 +14,7 @@ import (
 func TestAesEcbCipherEncrypt(t *testing.T) {
 	plaintext := "Play that funky music"
 
-	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"), nil)
+	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Errorf("TestDecryptAesEcbCipher: got an error %v", err)
 		return
@@ -43,7 +43,7 @@ func TestAesEcbCipherDecrypt(t *testing.T) {
 		return
 	}
 
-	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"), nil)
+	cipher, err := NewAesEcbCipher([]byte("YELLOW SUBMARINE"))
 	if err != nil {
 		t.Errorf("TestAesEcbCipherDecrypt: got an error %v", err)
 		return
@@ -99,11 +99,12 @@ func TestDetectBlockSize(t *testing.T) {
 	salt, _ := base64.StdEncoding.DecodeString(encodedSalt)
 
 	key := generateRandomBytes(aes.BlockSize)
-	cipher, err := NewAesEcbCipher(key, salt)
+	cipher, err := NewAesEcbCipher(key)
 	if err != nil {
 		t.Errorf("TestDetectBlockSize: got an error %v", err)
 		return
 	}
+	cipher.(*EcbCipher).SetSalt(salt)
 
 	keySize := cipher.(*EcbCipher).detectBlockSize()
 	if keySize != aes.BlockSize {
@@ -115,11 +116,12 @@ func TestDetectSaltSize(t *testing.T) {
 	for expectedSaltSize := 0; expectedSaltSize < 100; expectedSaltSize += 4 {
 		key := generateRandomBytes(aes.BlockSize)
 		salt := generateRandomBytes(expectedSaltSize)
-		cipher, err := NewAesEcbCipher(key, salt)
+		cipher, err := NewAesEcbCipher(key)
 		if err != nil {
 			t.Errorf("TestDetectBlockSize: got an error %v", err)
 			return
 		}
+		cipher.(*EcbCipher).SetSalt(salt)
 
 		saltSize := cipher.(*EcbCipher).detectSaltSize()
 		if expectedSaltSize != saltSize {
@@ -132,45 +134,16 @@ func TestDecryptSalt(t *testing.T) {
 	key := generateRandomBytes(aes.BlockSize)
 	encodedSalt := `Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK`
 	expectedSalt, _ := base64.StdEncoding.DecodeString(encodedSalt)
-	cipher, err := NewAesEcbCipher(key, expectedSalt)
+	cipher, err := NewAesEcbCipher(key)
 	if err != nil {
 		t.Errorf("TestDetectBlockSize: got an error %v", err)
 		return
 	}
+	cipher.(*EcbCipher).SetSalt(expectedSalt)
 
 	salt := cipher.(*EcbCipher).DecryptSalt()
 	if bytes.Compare(expectedSalt, salt) != 0 {
 		t.Errorf("TestDecryptSalt: expected %s, got %v", expectedSalt, salt)
 		return
-	}
-}
-
-func TestDetectSaltByte(t *testing.T) {
-	key := generateRandomBytes(aes.BlockSize)
-	salt := generateRandomBytes(30)
-	cipher, err := NewAesEcbCipher(key, salt)
-	if err != nil {
-		t.Errorf("TestDetectBlockSize: got an error %v", err)
-		return
-	}
-
-	for saltIdx := 0; saltIdx < 30; saltIdx += 4 {
-		blockPrefix := make([]byte, aes.BlockSize-1)
-		var leftPaddedPlainText []byte
-		var blockIdx int
-
-		if saltIdx >= aes.BlockSize {
-			leftPaddedPlainText = bytes.Repeat([]byte("A"), aes.BlockSize-saltIdx%aes.BlockSize-1)
-			copy(blockPrefix, salt[saltIdx-aes.BlockSize+1:saltIdx])
-		} else {
-			leftPaddedPlainText = bytes.Repeat([]byte("A"), aes.BlockSize-saltIdx-1)
-			blockPrefix = append(leftPaddedPlainText, salt[0:saltIdx]...)
-		}
-
-		blockIdx = saltIdx/aes.BlockSize + 1
-		detectedByte := cipher.(*EcbCipher).detectSaltByte(blockPrefix, leftPaddedPlainText, blockIdx, aes.BlockSize)
-		if detectedByte != salt[saltIdx] {
-			t.Errorf("TestDetectBlockSize: expected idx %d to be %d, got %d", saltIdx, salt[saltIdx], detectedByte)
-		}
 	}
 }

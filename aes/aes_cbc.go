@@ -19,7 +19,7 @@ func NewAesCbcCipher(key []byte, iv []byte) (Cipher, error) {
 		return nil, fmt.Errorf("IV length must equal block size")
 	}
 
-	aesCipher, err := NewAesEcbCipher(key, nil)
+	aesCipher, err := NewAesEcbCipher(key)
 	if err != nil {
 		return nil, err
 	}
