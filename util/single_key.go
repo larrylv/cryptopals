@@ -26,7 +26,7 @@ func FindSingleXorByte(ciphertext []byte) (byte, error) {
 	for key := 0; key <= 255; key++ {
 		s, err := XorWithSingleByte(byte(key), ciphertext)
 		if err != nil {
-			return byte(0), fmt.Errorf("FinderSingleKeyForXorCipher: %v", err)
+			return byte(0), fmt.Errorf("FindSingleXorByte: %v", err)
 		}
 
 		tmpScore := ScoringEnglish(s)
