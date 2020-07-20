@@ -14,7 +14,7 @@ func TestXorWithRepeatKey(t *testing.T) {
 	encoded, err := XorWithRepeatKey([]byte(key), []byte(str))
 	if err != nil {
 		t.Fatalf("XorWithRepeatKey: got an error %v\n", err)
-	} else if bytes.Compare([]byte(expectedEncoded), encoded) != 0 {
+	} else if !bytes.Equal([]byte(expectedEncoded), encoded) {
 		t.Fatalf("XorWithRepeatKey: expected %s, got %s\n", expectedEncoded, encoded)
 	}
 }

@@ -29,7 +29,7 @@ func TestXor(t *testing.T) {
 	s, err := Xor(decodedA, decodedB)
 	if err != nil {
 		t.Fatalf("Xor: got an error %v\n", err)
-	} else if bytes.Compare(s, decodedExpected) != 0 {
+	} else if !bytes.Equal(s, decodedExpected) {
 		t.Fatalf("Xor: expected %s, got %s\n", expected, s)
 	}
 }
@@ -54,7 +54,7 @@ func TestPKCS7Padding(t *testing.T) {
 		return
 	}
 
-	if bytes.Compare([]byte(expectedCipher), cipher) != 0 {
+	if !bytes.Equal([]byte(expectedCipher), cipher) {
 		t.Errorf("TestPKCS7Padding: expected %v, got %v", expectedCipher, cipher)
 	}
 }
