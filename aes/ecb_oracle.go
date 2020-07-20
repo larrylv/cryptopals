@@ -60,7 +60,7 @@ func (cipher *EcbOracleCipher) DecryptSalt() []byte {
 		for b := 0; b < 256; b++ {
 			curDetectionBlock := append(curDetectionBlockPrefix, byte(b))
 			encrypted := cipher.Encrypt(append(curDetectionBlock, leftPaddedPlainText...))
-			if bytes.Compare(encrypted[:blockSize], encrypted[blockIdx*blockSize:(blockIdx+1)*blockSize]) == 0 {
+			if bytes.Equal(encrypted[:blockSize], encrypted[blockIdx*blockSize:(blockIdx+1)*blockSize]) {
 				salt[i] = byte(b)
 				break
 			}
@@ -76,7 +76,7 @@ func (cipher *EcbOracleCipher) detectBlockSize() int {
 	for i := 1; i <= 128; i++ {
 		firstEncrypted := cipher.Encrypt(bytes.Repeat([]byte("A"), i))
 		secondEncrypted := cipher.Encrypt(bytes.Repeat([]byte("A"), i*2))
-		if bytes.Compare(firstEncrypted[:i], secondEncrypted[:i]) == 0 {
+		if bytes.Equal(firstEncrypted[:i], secondEncrypted[:i]) {
 			keySize = i
 			break
 		}

@@ -43,7 +43,7 @@ func (cipher *EcbCipher) BlockEncrypt(plaintext []byte) []byte {
 func (cipher *EcbCipher) Encrypt(plaintext []byte) []byte {
 	paddedPlainText, err := util.PKCS7Padding([]byte(plaintext), cipher.blockSize)
 	if err != nil {
-		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
+		fmt.Printf("AesEcbCipher.Encrypt error: %v", err)
 		return nil
 	}
 

@@ -34,7 +34,7 @@ func NewAesCbcCipher(key []byte, iv []byte) (Cipher, error) {
 func (cipher *CbcCipher) Encrypt(plaintext []byte) []byte {
 	paddedPlainText, err := util.PKCS7Padding([]byte(plaintext), aes.BlockSize)
 	if err != nil {
-		fmt.Errorf("AesEcbCipher.Encrypt error: %v", err)
+		fmt.Printf("AesEcbCipher.Encrypt error: %v", err)
 		return nil
 	}
 

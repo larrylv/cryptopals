@@ -21,7 +21,7 @@ func TestAesCbcCipherEncrypt(t *testing.T) {
 	decrypted := cipher.Decrypt(encrypted)
 
 	// fmt.Printf("%v - %s, %v - %s\n", plaintext, plaintext, decrypted, decrypted)
-	if bytes.Compare([]byte(plaintext), decrypted) != 0 {
+	if !bytes.Equal([]byte(plaintext), decrypted) {
 		t.Errorf("TestAesCbcCipherEncrypt: sth wrong with the encryption or decryption, got %s after decryption", decrypted)
 	}
 }

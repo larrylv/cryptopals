@@ -53,7 +53,7 @@ func TestDecryptSalt(t *testing.T) {
 	}
 
 	salt := cipher.DecryptSalt()
-	if bytes.Compare(expectedSalt, salt) != 0 {
+	if !bytes.Equal(expectedSalt, salt) {
 		t.Errorf("TestDecryptSalt: expected %s, got %v", expectedSalt, salt)
 		return
 	}
